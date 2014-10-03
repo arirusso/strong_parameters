@@ -6,6 +6,8 @@ module ActionController
   # Parameter wrapper that lazily initializes strong parameters when it's used
   class Parameters < HashWithIndifferentAccess
 
+    cattr_accessor :action_on_unpermitted_parameters, :instance_accessor => false
+
     def initialize(attributes = nil)
       super(attributes)
       @permitted = false
@@ -71,7 +73,6 @@ module ActionController
       base.send(:attr_accessor, :permitted)
       base.send(:alias_method, :permitted?, :permitted)
       base.send(:alias_method, :required, :require)
-      base.send(:cattr_accessor, :action_on_unpermitted_parameters, :instance_accessor => false)
     end
 
     # Never raise an UnpermittedParameters exception because of these params
@@ -118,7 +119,7 @@ module ActionController
         end
       end
 
-      unpermitted_parameters!(params) if self.class.action_on_unpermitted_parameters
+      unpermitted_parameters!(params) if ActionController::Parameters.action_on_unpermitted_parameters
 
       params.permit!
     end
@@ -180,12 +181,12 @@ module ActionController
     end
 
     def unpermitted_parameters!(params)
-      return unless self.class.action_on_unpermitted_parameters
+      return unless ActionController::Parameters.action_on_unpermitted_parameters
 
       unpermitted_keys = unpermitted_keys(params)
 
       if unpermitted_keys.any?
-        case self.class.action_on_unpermitted_parameters
+        case ActionController::Parameters.action_on_unpermitted_parameters
         when :log
           ActionController::Base.logger.debug "Unpermitted parameters: #{unpermitted_keys.join(", ")}"
         when :raise
