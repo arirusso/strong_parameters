@@ -56,6 +56,7 @@ module ActionController
       def self.included(base)
         base.send(:attr_accessor, :permitted)
         base.send(:alias_method, :permitted?, :permitted)
+        base.send(:alias_method, :required, :require)
         base.send(:cattr_accessor, :action_on_unpermitted_parameters, :instance_accessor => false)
       end
 
@@ -76,8 +77,6 @@ module ActionController
       def require(key)
         self[key].presence || raise(ActionController::ParameterMissing.new(key))
       end
-
-      alias :required :require
 
       def permit(*filters)
         params = self.class.new
